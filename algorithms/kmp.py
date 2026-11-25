@@ -11,12 +11,6 @@ LPS Array Principle:
 For pattern P of length M:
 LPS[i] = the length of the longest proper prefix of P[0..i] that matches
 a proper suffix of P[0..i].
-Example for "ABABC":
-- Substring "A" -> prefix: "", suffix: "" -> LPS[0] = 0
-- Substring "AB" -> LPS[1] = 0
-- Substring "ABA" -> prefix "A" matches suffix "A" -> LPS[2] = 1
-- Substring "ABAB" -> prefix "AB" matches suffix "AB" -> LPS[3] = 2
-- Substring "ABABC" -> LPS[4] = 0
 
 Complexity Analysis:
 - Preprocessing Time: O(M) to construct the LPS array.
@@ -26,22 +20,16 @@ Complexity Analysis:
 """
 
 from typing import List
+from algorithms.base import StringMatchingAlgorithm, MatchResult
 
 
 def compute_lps_array(pattern: str) -> List[int]:
     """
     Computes the LPS (Longest Proper Prefix that is also Suffix) array for pattern.
-
-    Args:
-        pattern (str): The pattern string.
-
-    Returns:
-        List[int]: The LPS array of size len(pattern).
     """
     m: int = len(pattern)
     lps: List[int] = [0] * m
 
-    # Length of the previous longest prefix suffix
     length: int = 0
     i: int = 1
 
@@ -52,7 +40,6 @@ def compute_lps_array(pattern: str) -> List[int]:
             i += 1
         else:
             if length != 0:
-                # Fall back to the previous prefix length without incrementing i
                 length = lps[length - 1]
             else:
                 lps[i] = 0
@@ -65,47 +52,69 @@ def kmp_search(text: str, pattern: str) -> List[int]:
     """
     Finds all 0-based starting indices where 'pattern' occurs in 'text'
     using the Knuth-Morris-Pratt (KMP) algorithm.
+    """
+    res = kmp_search_detailed(text, pattern)
+    return res.matches
 
-    Args:
-        text (str): The text document to search within.
-        pattern (str): The query pattern to search for.
 
-    Returns:
-        List[int]: List of match start indices.
+def kmp_search_detailed(text: str, pattern: str) -> MatchResult:
+    """
+    Detailed KMP search returning match indices, comparisons count, and execution stats.
     """
     matches: List[int] = []
+    comparisons: int = 0
 
     n: int = len(text)
     m: int = len(pattern)
 
-    # Edge cases: empty pattern, empty text, or pattern longer than text
     if m == 0 or n == 0 or m > n:
-        return matches
+        return MatchResult(
+            algorithm_name="Knuth-Morris-Pratt (KMP)",
+            matches=matches,
+            comparisons=0
+        )
 
-    # Step 1: Precompute LPS array in O(m) time
     lps: List[int] = compute_lps_array(pattern)
 
-    # Step 2: Search through text in O(n) time
-    i: int = 0  # index for text
-    j: int = 0  # index for pattern
+    i: int = 0  # text index
+    j: int = 0  # pattern index
 
     while i < n:
+        comparisons += 1
         if pattern[j] == text[i]:
             i += 1
             j += 1
 
         if j == m:
-            # Full match found starting at index (i - j)
             matches.append(i - j)
-            # Use LPS to find next potential match without resetting i
             j = lps[j - 1]
         elif i < n and pattern[j] != text[i]:
-            # Mismatch after j matches
             if j != 0:
-                # Shift pattern by consulting LPS array (do NOT decrement i)
                 j = lps[j - 1]
             else:
-                # First character mismatch, advance text pointer
                 i += 1
 
-    return matches
+    return MatchResult(
+        algorithm_name="Knuth-Morris-Pratt (KMP)",
+        matches=matches,
+        comparisons=comparisons
+    )
+
+
+class KMPAlgorithm(StringMatchingAlgorithm):
+    """Object-oriented wrapper implementing StringMatchingAlgorithm interface."""
+
+    @property
+    def name(self) -> str:
+        return "Knuth-Morris-Pratt (KMP)"
+
+    @property
+    def worst_case_complexity(self) -> str:
+        return "O(N + M)"
+
+    @property
+    def space_complexity(self) -> str:
+        return "O(M)"
+
+    def search(self, text: str, pattern: str) -> MatchResult:
+        return kmp_search_detailed(text, pattern)
