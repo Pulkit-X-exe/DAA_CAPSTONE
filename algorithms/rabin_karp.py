@@ -21,7 +21,8 @@ Complexity Analysis:
 - Auxiliary Space: O(1).
 """
 
-from typing import List, Tuple, Optional
+from typing import List
+from algorithms.base import StringMatchingAlgorithm, MatchResult
 
 
 def rabin_karp_search(
@@ -43,16 +44,36 @@ def rabin_karp_search(
     Returns:
         List[int]: List of match start indices.
     """
+    res = rabin_karp_search_detailed(text, pattern, base, prime_mod)
+    return res.matches
+
+
+def rabin_karp_search_detailed(
+    text: str,
+    pattern: str,
+    base: int = 256,
+    prime_mod: int = 1000000007
+) -> MatchResult:
+    """
+    Detailed Rabin-Karp search returning match indices, character comparisons,
+    and spurious hit (hash collision) counts.
+    """
     matches: List[int] = []
+    comparisons: int = 0
+    collisions: int = 0
 
     n: int = len(text)
     m: int = len(pattern)
 
-    # Edge cases
     if m == 0 or n == 0 or m > n:
-        return matches
+        return MatchResult(
+            algorithm_name="Rabin-Karp Rolling Hash",
+            matches=matches,
+            comparisons=0,
+            collisions=0
+        )
 
-    # h is the multiplier for the most significant character: (base^(m-1)) % prime_mod
+    # h = (base^(m-1)) % prime_mod
     h: int = 1
     for _ in range(m - 1):
         h = (h * base) % prime_mod
@@ -60,30 +81,53 @@ def rabin_karp_search(
     pattern_hash: int = 0
     window_hash: int = 0
 
-    # Calculate initial hash for pattern and first window of text
     for i in range(m):
         pattern_hash = (pattern_hash * base + ord(pattern[i])) % prime_mod
         window_hash = (window_hash * base + ord(text[i])) % prime_mod
 
-    # Slide the window over the text
     for i in range(n - m + 1):
-        # When hash values match, verify character by character to handle collisions
         if pattern_hash == window_hash:
             match_found: bool = True
             for j in range(m):
+                comparisons += 1
                 if text[i + j] != pattern[j]:
                     match_found = False
-                    break  # Spurious hit / hash collision!
+                    collisions += 1  # Spurious hit / hash collision!
+                    break
             if match_found:
                 matches.append(i)
 
-        # Compute rolling hash for the next window if not at the end
         if i < n - m:
-            # Remove leading character, shift left (multiply by base), and add trailing character
             window_hash = (base * (window_hash - ord(text[i]) * h) + ord(text[i + m])) % prime_mod
-
-            # Handle negative result in modulo arithmetic
             if window_hash < 0:
                 window_hash += prime_mod
 
-    return matches
+    return MatchResult(
+        algorithm_name="Rabin-Karp Rolling Hash",
+        matches=matches,
+        comparisons=comparisons,
+        collisions=collisions
+    )
+
+
+class RabinKarpAlgorithm(StringMatchingAlgorithm):
+    """Object-oriented wrapper implementing StringMatchingAlgorithm interface."""
+
+    def __init__(self, base: int = 256, prime_mod: int = 1000000007):
+        self.base = base
+        self.prime_mod = prime_mod
+
+    @property
+    def name(self) -> str:
+        return "Rabin-Karp Rolling Hash"
+
+    @property
+    def worst_case_complexity(self) -> str:
+        return "O(N * M)"
+
+    @property
+    def space_complexity(self) -> str:
+        return "O(1)"
+
+    def search(self, text: str, pattern: str) -> MatchResult:
+        return rabin_karp_search_detailed(text, pattern, self.base, self.prime_mod)
