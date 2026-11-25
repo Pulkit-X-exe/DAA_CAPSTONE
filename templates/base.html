@@ -40,7 +40,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-3" href="{{ url_for('index') }}#algorithms-section">
+                        <a class="nav-link px-3" href="#" data-bs-toggle="modal" data-bs-target="#algoModal">
                             <i class="bi bi-cpu me-1"></i> DAA Algorithms
                         </a>
                     </li>
@@ -79,6 +79,76 @@
     <main class="min-vh-100">
         {% block content %}{% endblock %}
     </main>
+
+    <!-- Algorithm Details Modal -->
+    <div class="modal fade" id="algoModal" tabindex="-1" aria-labelledby="algoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content bg-dark-card border-secondary text-light">
+                <div class="modal-header border-dark-subtle">
+                    <h5 class="modal-title fw-bold" id="algoModalLabel">
+                        <i class="bi bi-cpu-fill text-primary me-2"></i>DAA String Matching Algorithms Reference
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Nav Tabs -->
+                    <ul class="nav nav-pills mb-3 gap-2" id="algoTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-kmp" data-bs-toggle="pill" data-bs-target="#content-kmp" type="button" role="tab">Knuth-Morris-Pratt (KMP)</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-rk" data-bs-toggle="pill" data-bs-target="#content-rk" type="button" role="tab">Rabin-Karp Rolling Hash</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-naive" data-bs-toggle="pill" data-bs-target="#content-naive" type="button" role="tab">Naive Pattern Matching</button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Contents -->
+                    <div class="tab-content" id="algoTabsContent">
+                        <!-- KMP -->
+                        <div class="tab-pane fade show active" id="content-kmp" role="tabpanel">
+                            <h6 class="text-primary fw-bold">Knuth-Morris-Pratt (KMP) Algorithm</h6>
+                            <p class="small text-secondary">Precomputes an LPS (Longest Proper Prefix which is also a Suffix) array to avoid ever decrementing the text index pointer upon mismatch.</p>
+                            <div class="p-3 bg-dark-navy rounded border border-dark-subtle mb-3">
+                                <ul class="list-unstyled mb-0 small">
+                                    <li><strong>Time Complexity:</strong> Preprocessing O(M), Search O(N) &rarr; <span class="text-success fw-bold">Total O(N + M)</span></li>
+                                    <li><strong>Space Complexity:</strong> <span class="text-info fw-bold">O(M)</span> for the LPS array</li>
+                                    <li><strong>Key Advantage:</strong> Text index never moves backwards (strictly deterministic runtime).</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Rabin-Karp -->
+                        <div class="tab-pane fade" id="content-rk" role="tabpanel">
+                            <h6 class="text-info fw-bold">Rabin-Karp Algorithm (Rolling Hash)</h6>
+                            <p class="small text-secondary">Computes numerical fingerprints for sliding windows. Incurs O(1) rolling hash transition and verifies characters only upon hash match.</p>
+                            <div class="p-3 bg-dark-navy rounded border border-dark-subtle mb-3">
+                                <ul class="list-unstyled mb-0 small">
+                                    <li><strong>Time Complexity:</strong> Average <span class="text-success fw-bold">O(N + M)</span>, Worst <span class="text-danger fw-bold">O(N &times; M)</span> (hash collisions)</li>
+                                    <li><strong>Space Complexity:</strong> <span class="text-info fw-bold">O(1)</span> auxiliary memory</li>
+                                    <li><strong>Collision Resolution:</strong> Character-by-character check upon hash equality to filter spurious hits.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Naive -->
+                        <div class="tab-pane fade" id="content-naive" role="tabpanel">
+                            <h6 class="text-warning fw-bold">Naive Brute-Force Pattern Matching</h6>
+                            <p class="small text-secondary">Slides the pattern window one index at a time, testing all characters from index 0 to (N - M).</p>
+                            <div class="p-3 bg-dark-navy rounded border border-dark-subtle mb-3">
+                                <ul class="list-unstyled mb-0 small">
+                                    <li><strong>Time Complexity:</strong> Best <span class="text-success fw-bold">O(N)</span>, Worst <span class="text-danger fw-bold">O(N &times; M)</span></li>
+                                    <li><strong>Space Complexity:</strong> <span class="text-info fw-bold">O(1)</span></li>
+                                    <li><strong>Limitation:</strong> Incurs redundant comparisons when text has repeating patterns (e.g., "AAAAAB").</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer-section border-top border-dark-subtle mt-5 py-4">
