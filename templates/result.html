@@ -10,8 +10,8 @@
                 <i class="bi bi-arrow-left me-1"></i> New Comparison
             </a>
             <h2 class="fw-bold text-white mb-0">Comparison <span class="text-gradient">Results</span></h2>
-            <p class="small text-muted mb-0">
-                Comparing <strong>{{ result.doc2_name }}</strong> against reference <strong>{{ result.doc1_name }}</strong>
+            <p class="small text-slate mb-0">
+                Comparing <strong class="text-white">{{ result.doc2_name }}</strong> against reference <strong class="text-white">{{ result.doc1_name }}</strong>
             </p>
         </div>
         <div class="d-flex gap-2">
@@ -30,7 +30,7 @@
         <!-- Similarity Percentage Card -->
         <div class="col-md-3">
             <div class="glass-card p-4 text-center h-100">
-                <div class="text-muted small fw-semibold text-uppercase mb-2">Similarity Score</div>
+                <div class="card-label mb-2">Similarity Score</div>
                 <div class="display-5 fw-bold 
                     {% if result.similarity_percentage > 50 %}text-danger
                     {% elif result.similarity_percentage > 20 %}text-warning
@@ -46,7 +46,7 @@
                         style="width: {{ result.similarity_percentage }}%;">
                     </div>
                 </div>
-                <span class="small text-muted">
+                <span class="card-subtext">
                     {% if result.similarity_percentage >= 80 %}Significant text overlap detected
                     {% elif result.similarity_percentage >= 30 %}Moderate text overlap
                     {% elif result.similarity_percentage > 0 %}Low text overlap
@@ -58,31 +58,31 @@
         <!-- Matched Words -->
         <div class="col-md-3">
             <div class="glass-card p-4 text-center h-100">
-                <div class="text-muted small fw-semibold text-uppercase mb-2">Matched Words</div>
+                <div class="card-label mb-2">Matched Words</div>
                 <div class="display-5 fw-bold text-primary mb-2">
                     {{ result.matched_word_count }}
                 </div>
-                <span class="small text-muted">Out of {{ result.doc2_word_count }} words in compared doc</span>
+                <span class="card-subtext">Out of {{ result.doc2_word_count }} words in compared doc</span>
             </div>
         </div>
 
         <!-- Matching Sections -->
         <div class="col-md-3">
             <div class="glass-card p-4 text-center h-100">
-                <div class="text-muted small fw-semibold text-uppercase mb-2">Matching Sections</div>
+                <div class="card-label mb-2">Matching Sections</div>
                 <div class="display-5 fw-bold text-info mb-2">
                     {{ result.matching_sections_count }}
                 </div>
-                <span class="small text-muted">Continuous matching passages</span>
+                <span class="card-subtext">Continuous matching passages</span>
             </div>
         </div>
 
         <!-- Execution Time & Algorithm -->
         <div class="col-md-3">
             <div class="glass-card p-4 text-center h-100">
-                <div class="text-muted small fw-semibold text-uppercase mb-2">Algorithm Time</div>
+                <div class="card-label mb-2">Algorithm Time</div>
                 <div class="display-5 fw-bold text-warning mb-2">
-                    {{ result.execution_time_ms }} <span class="fs-6 fw-normal text-muted">ms</span>
+                    {{ result.execution_time_ms }} <span class="fs-6 fw-normal text-slate">ms</span>
                 </div>
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
                     {{ result.algorithm_name }}
@@ -100,7 +100,7 @@
                     <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
                         <i class="bi bi-file-earmark-check text-primary"></i> Reference Document
                     </h5>
-                    <span class="badge bg-dark-accent text-muted">{{ result.doc1_word_count }} words</span>
+                    <span class="badge doc-badge">{{ result.doc1_word_count }} words</span>
                 </div>
                 <div class="highlight-container p-3 rounded">
                     {{ result.highlighted_doc1 | safe }}
@@ -115,7 +115,7 @@
                     <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
                         <i class="bi bi-file-earmark-diff text-info"></i> Compared Document
                     </h5>
-                    <span class="badge bg-dark-accent text-muted">{{ result.doc2_word_count }} words</span>
+                    <span class="badge doc-badge">{{ result.doc2_word_count }} words</span>
                 </div>
                 <div class="highlight-container p-3 rounded">
                     {{ result.highlighted_doc2 | safe }}
