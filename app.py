@@ -14,6 +14,7 @@ import json
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, send_file
 from config import Config
 from utils.file_handler import process_uploaded_document
+from utils.report_generator import generate_pdf_report
 from services.comparison_service import compare_documents
 from services.benchmark_service import run_algorithm_benchmark
 
@@ -130,6 +131,43 @@ def get_sample(sample_id):
 def health():
     """Health check endpoint."""
     return jsonify({"status": "healthy", "service": "PlagScan"})
+
+
+@app.route("/download-report", methods=["GET"])
+def download_report():
+    """Generates and serves downloadable PDF comparison report."""
+    doc1_name = request.args.get("doc1", "Reference_Document")
+    doc2_name = request.args.get("doc2", "Compared_Document")
+    algo_key = request.args.get("algo", "kmp")
+    similarity = request.args.get("sim", "0.0")
+    exec_time = request.args.get("time", "0.0")
+
+    algo_names = {
+        "kmp": "Knuth-Morris-Pratt (KMP) Algorithm",
+        "rabin_karp": "Rabin-Karp Rolling Hash",
+        "naive": "Naive Pattern Matching"
+    }
+
+    report_payload = {
+        "doc1_name": doc1_name,
+        "doc2_name": doc2_name,
+        "algorithm_name": algo_names.get(algo_key, "Knuth-Morris-Pratt (KMP) Algorithm"),
+        "similarity_percentage": float(similarity),
+        "execution_time_ms": float(exec_time),
+        "matched_word_count": request.args.get("matched", "0"),
+        "doc1_word_count": request.args.get("doc1_words", "N/A"),
+        "doc2_word_count": request.args.get("doc2_words", "N/A"),
+        "matching_sections_count": request.args.get("sections", "1"),
+        "shingle_size": 5
+    }
+
+    pdf_buffer = generate_pdf_report(report_payload)
+    return send_file(
+        pdf_buffer,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"PlagScan_Report_{doc2_name.replace(' ', '_')}.pdf"
+    )
 
 
 if __name__ == "__main__":

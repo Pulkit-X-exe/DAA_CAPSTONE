@@ -50,3 +50,11 @@ def test_api_compare_empty_validation(client):
     payload = {"doc1_text": "", "doc2_text": ""}
     response = client.post("/api/compare", json=payload)
     assert response.status_code == 400
+
+
+def test_download_report_route(client):
+    response = client.get("/download-report?doc1=DocA.txt&doc2=DocB.txt&sim=35.5&time=2.1")
+    assert response.status_code == 200
+    assert response.mimetype == "application/pdf"
+    assert response.data.startswith(b"%PDF")
+
