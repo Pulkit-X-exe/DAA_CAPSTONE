@@ -3,7 +3,15 @@ Unit tests for text processing utilities.
 """
 
 import pytest
-from utils.text_processing import normalize_text, tokenize_words, generate_word_shingles
+from utils.text_processing import normalize_text, tokenize_words, generate_word_shingles, auto_select_shingle_size
+
+
+def test_auto_select_shingle_size():
+    assert auto_select_shingle_size(5) == 2
+    assert auto_select_shingle_size(25) == 3
+    assert auto_select_shingle_size(100) == 5
+    assert auto_select_shingle_size(500) == 6
+
 
 
 def test_normalize_text():

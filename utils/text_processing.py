@@ -5,6 +5,7 @@ Performs:
 - Normalization (case-folding, whitespace cleanup, safe punctuation handling)
 - Word tokenization
 - Configurable word shingling (k-grams of words)
+- Dynamic shingle size auto-selection
 """
 
 import re
@@ -20,9 +21,7 @@ def normalize_text(text: str) -> str:
     """
     if not text:
         return ""
-    # Convert to lowercase
     normalized = text.lower()
-    # Replace multiple whitespace characters with a single space
     normalized = re.sub(r"\s+", " ", normalized)
     return normalized.strip()
 
@@ -33,7 +32,6 @@ def tokenize_words(text: str) -> List[str]:
     """
     if not text:
         return []
-    # Extract alphanumeric words and basic punctuation-free tokens
     return [word for word in re.findall(r"\b\w+\b", text.lower()) if word]
 
 
@@ -77,3 +75,22 @@ def generate_word_shingles(tokens: List[str], k: int = 5) -> List[Dict[str, Any]
         })
 
     return shingles
+
+
+def auto_select_shingle_size(token_count: int) -> int:
+    """
+    Dynamically recommends an optimal shingle window size (k) based on document length.
+
+    - Under 10 words: k=2
+    - 10 - 40 words: k=3
+    - 40 - 200 words: k=5 (standard academic shingle)
+    - Above 200 words: k=6 (higher precision for long papers)
+    """
+    if token_count < 10:
+        return 2
+    elif token_count < 40:
+        return 3
+    elif token_count < 200:
+        return 5
+    else:
+        return 6
