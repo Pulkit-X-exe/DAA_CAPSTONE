@@ -15,7 +15,10 @@
             </p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ url_for('download_report') }}?doc1={{ result.doc1_name }}&doc2={{ result.doc2_name }}&algo={{ result.algorithm_key }}&sim={{ result.similarity_percentage }}&time={{ result.execution_time_ms }}" 
+            <button type="button" id="copySummaryBtn" class="btn btn-outline-secondary btn-sm px-3 rounded-pill d-flex align-items-center gap-2" onclick="copyResultSummary()">
+                <i class="bi bi-clipboard-check"></i> <span id="copyBtnText">Copy Summary</span>
+            </button>
+            <a href="{{ url_for('download_report') }}?doc1={{ result.doc1_name }}&doc2={{ result.doc2_name }}&algo={{ result.algorithm_key }}&sim={{ result.similarity_percentage }}&time={{ result.execution_time_ms }}&matched={{ result.matched_word_count }}&doc1_words={{ result.doc1_word_count }}&doc2_words={{ result.doc2_word_count }}&sections={{ result.matching_sections_count }}" 
                class="btn btn-primary-gradient btn-sm px-3 rounded-pill d-flex align-items-center gap-2">
                 <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF Report
             </a>

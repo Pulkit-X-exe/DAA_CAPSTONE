@@ -112,3 +112,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+function copyResultSummary() {
+    const btnText = document.getElementById('copyBtnText');
+    const simScore = document.querySelector('.display-5')?.textContent.trim() || 'N/A';
+    const summaryText = `[PlagScan DAA Analysis Summary]\nSimilarity Score: ${simScore}\nGenerated via DAA Capstone Project`;
+
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(summaryText).then(() => {
+            if (btnText) {
+                const original = btnText.textContent;
+                btnText.textContent = "Copied!";
+                setTimeout(() => { btnText.textContent = original; }, 2000);
+            }
+        });
+    }
+}
