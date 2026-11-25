@@ -15,6 +15,7 @@ Complexity Analysis:
 """
 
 from typing import List
+from algorithms.base import StringMatchingAlgorithm, MatchResult
 
 
 def naive_search(text: str, pattern: str) -> List[int]:
@@ -29,26 +30,55 @@ def naive_search(text: str, pattern: str) -> List[int]:
     Returns:
         List[int]: List of starting indices where pattern matches text.
     """
+    res = naive_search_detailed(text, pattern)
+    return res.matches
+
+
+def naive_search_detailed(text: str, pattern: str) -> MatchResult:
+    """
+    Finds matches with detailed character comparison counting for DAA analysis.
+    """
     matches: List[int] = []
+    comparisons: int = 0
 
     n: int = len(text)
     m: int = len(pattern)
 
-    # Edge cases: empty pattern, empty text, or pattern longer than text
     if m == 0 or n == 0 or m > n:
-        return matches
+        return MatchResult(algorithm_name="Naive Pattern Matching", matches=matches, comparisons=0)
 
-    # Slide pattern over text from index 0 to (n - m)
     for i in range(n - m + 1):
         match_found: bool = True
-
-        # Check each character of pattern against text[i + j]
         for j in range(m):
+            comparisons += 1
             if text[i + j] != pattern[j]:
                 match_found = False
-                break  # Mismatch encountered; shift pattern by 1
+                break
 
         if match_found:
             matches.append(i)
 
-    return matches
+    return MatchResult(
+        algorithm_name="Naive Pattern Matching",
+        matches=matches,
+        comparisons=comparisons
+    )
+
+
+class NaiveAlgorithm(StringMatchingAlgorithm):
+    """Object-oriented wrapper implementing StringMatchingAlgorithm interface."""
+
+    @property
+    def name(self) -> str:
+        return "Naive Pattern Matching"
+
+    @property
+    def worst_case_complexity(self) -> str:
+        return "O(N * M)"
+
+    @property
+    def space_complexity(self) -> str:
+        return "O(1)"
+
+    def search(self, text: str, pattern: str) -> MatchResult:
+        return naive_search_detailed(text, pattern)
