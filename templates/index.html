@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section py-5 position-relative overflow-hidden">
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="container py-4 text-center position-relative">
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3 hero-badge">
+            <span class="badge-dot"></span>
+            <span class="small fw-semibold text-gradient">DAA Capstone Project &bull; String Matching Engine</span>
+        </div>
+        <h1 class="display-4 fw-extrabold text-white mb-3">
+            Intelligent <span class="text-gradient">Plagiarism Detection</span> System
+        </h1>
+        <p class="lead text-secondary mx-auto max-w-700 mb-4">
+            Compare two documents for text overlap and verbatim borrowing using pure manual implementations 
+            of <strong>Naive Pattern Matching</strong>, <strong>Rabin-Karp Rolling Hash</strong>, and <strong>Knuth-Morris-Pratt (KMP)</strong>.
+        </p>
+
+        <!-- Quick 1-Click Preset Samples -->
+        <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 mb-4">
+            <span class="small text-muted me-2"><i class="bi bi-lightning-charge-fill text-warning"></i> Quick Demo Presets:</span>
+            <button type="button" class="btn btn-sm btn-dark-glass sample-btn" onclick="loadSample('identical')">
+                <i class="bi bi-check2-circle text-success me-1"></i> Identical (100%)
+            </button>
+            <button type="button" class="btn btn-sm btn-dark-glass sample-btn" onclick="loadSample('partial')">
+                <i class="bi bi-pie-chart-fill text-info me-1"></i> Partial Overlap (~50%)
+            </button>
+            <button type="button" class="btn btn-sm btn-dark-glass sample-btn" onclick="loadSample('different')">
+                <i class="bi bi-x-circle text-danger me-1"></i> Completely Different (0%)
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Comparison Checker Section -->
+<section id="comparison-section" class="py-4">
+    <div class="container">
+        <form action="{{ url_for('compare') }}" method="POST" enctype="multipart/form-data" id="compareForm">
+            <div class="row g-4">
+                
+                <!-- Document 1 (Original / Reference) -->
+                <div class="col-lg-6">
+                    <div class="glass-card h-100 p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
+                                <span class="badge-icon bg-primary"><i class="bi bi-file-earmark-text"></i></span>
+                                Document 1 <small class="text-muted fw-normal fs-6">(Reference / Original)</small>
+                            </h5>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-secondary active btn-mode" onclick="toggleInputMode('doc1', 'upload')">Upload</button>
+                                <button type="button" class="btn btn-outline-secondary btn-mode" onclick="toggleInputMode('doc1', 'text')">Paste Text</button>
+                            </div>
+                        </div>
+
+                        <!-- Upload Zone -->
+                        <div id="doc1_upload_zone" class="upload-zone mb-3">
+                            <input type="file" name="doc1_file" id="doc1_file" class="file-input" accept=".txt,.pdf,.docx" onchange="handleFileSelected(this, 'doc1')">
+                            <div class="upload-content text-center py-4">
+                                <i class="bi bi-cloud-arrow-up display-5 text-primary mb-2"></i>
+                                <h6 class="text-white mb-1">Drag & drop your file or <span class="text-primary cursor-pointer">browse</span></h6>
+                                <p class="small text-muted mb-0">Supported formats: .TXT, .PDF, .DOCX (Max 16MB)</p>
+                            </div>
+                            <div id="doc1_file_badge" class="file-badge d-none mt-2 p-2 rounded bg-dark-accent d-flex justify-content-between align-items-center">
+                                <span class="small text-white file-name-display"><i class="bi bi-file-earmark-check text-success me-1"></i> <span id="doc1_file_name"></span></span>
+                                <button type="button" class="btn-close btn-close-white btn-sm" onclick="clearFile('doc1')"></button>
+                            </div>
+                        </div>
+
+                        <!-- Direct Text Area -->
+                        <div id="doc1_text_zone" class="text-zone d-none mb-3">
+                            <textarea name="doc1_text" id="doc1_text" class="form-control custom-textarea" rows="8" placeholder="Paste or type original reference text here..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document 2 (Compared / Suspect) -->
+                <div class="col-lg-6">
+                    <div class="glass-card h-100 p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
+                                <span class="badge-icon bg-info"><i class="bi bi-file-earmark-diff"></i></span>
+                                Document 2 <small class="text-muted fw-normal fs-6">(Compared / Suspect)</small>
+                            </h5>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-secondary active btn-mode" onclick="toggleInputMode('doc2', 'upload')">Upload</button>
+                                <button type="button" class="btn btn-outline-secondary btn-mode" onclick="toggleInputMode('doc2', 'text')">Paste Text</button>
+                            </div>
+                        </div>
+
+                        <!-- Upload Zone -->
+                        <div id="doc2_upload_zone" class="upload-zone mb-3">
+                            <input type="file" name="doc2_file" id="doc2_file" class="file-input" accept=".txt,.pdf,.docx" onchange="handleFileSelected(this, 'doc2')">
+                            <div class="upload-content text-center py-4">
+                                <i class="bi bi-cloud-arrow-up display-5 text-info mb-2"></i>
+                                <h6 class="text-white mb-1">Drag & drop your file or <span class="text-info cursor-pointer">browse</span></h6>
+                                <p class="small text-muted mb-0">Supported formats: .TXT, .PDF, .DOCX (Max 16MB)</p>
+                            </div>
+                            <div id="doc2_file_badge" class="file-badge d-none mt-2 p-2 rounded bg-dark-accent d-flex justify-content-between align-items-center">
+                                <span class="small text-white file-name-display"><i class="bi bi-file-earmark-check text-success me-1"></i> <span id="doc2_file_name"></span></span>
+                                <button type="button" class="btn-close btn-close-white btn-sm" onclick="clearFile('doc2')"></button>
+                            </div>
+                        </div>
+
+                        <!-- Direct Text Area -->
+                        <div id="doc2_text_zone" class="text-zone d-none mb-3">
+                            <textarea name="doc2_text" id="doc2_text" class="form-control custom-textarea" rows="8" placeholder="Paste or type text to be verified for similarity..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Algorithm Settings & Launch Controls -->
+            <div class="glass-card mt-4 p-4">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-5">
+                        <label class="form-label text-muted small fw-semibold mb-1">Select DAA Matching Algorithm</label>
+                        <select name="algorithm" id="algorithm_select" class="form-select custom-select">
+                            <option value="kmp" selected>Knuth-Morris-Pratt (KMP) — O(N + M) [Recommended]</option>
+                            <option value="rabin_karp">Rabin-Karp Rolling Hash — O(N + M) Avg</option>
+                            <option value="naive">Naive Pattern Matching — O(N × M) Worst Case</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small fw-semibold mb-1">
+                            Shingle Size (Word N-Gram)
+                            <i class="bi bi-info-circle ms-1" title="Number of consecutive words matched as a unit (default 5 words)."></i>
+                        </label>
+                        <input type="number" name="shingle_size" id="shingle_size" class="form-control custom-select" value="5" min="1" max="15">
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" id="compareBtn" class="btn btn-primary-gradient w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-play-circle-fill fs-5"></i>
+                            <span>Compare & Detect Similarity</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- DAA Algorithms Educational Overview -->
+<section id="algorithms-section" class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-white mb-2">Manual <span class="text-gradient">DAA Algorithms</span> Compared</h2>
+            <p class="text-muted mx-auto max-w-600">
+                Core string-matching algorithms implemented from scratch in pure Python without reliance on built-in search methods.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Naive -->
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100 algo-card">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="algo-pill text-warning border-warning">Brute Force</span>
+                        <span class="text-muted small">O(N × M)</span>
+                    </div>
+                    <h5 class="fw-bold text-white mb-2">1. Naive Pattern Matching</h5>
+                    <p class="small text-secondary mb-3">
+                        Slides the pattern window over the text one character at a time, checking every character sequentially. Simple but incurs worst-case performance on repetitive inputs.
+                    </p>
+                    <ul class="list-unstyled small text-muted mb-0">
+                        <li><i class="bi bi-clock me-1 text-primary"></i> Best Time: <strong>O(N)</strong></li>
+                        <li><i class="bi bi-exclamation-circle me-1 text-danger"></i> Worst Time: <strong>O(N × M)</strong></li>
+                        <li><i class="bi bi-hdd me-1 text-info"></i> Space: <strong>O(1)</strong></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Rabin-Karp -->
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100 algo-card">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="algo-pill text-info border-info">Rolling Hash</span>
+                        <span class="text-muted small">O(N + M) Avg</span>
+                    </div>
+                    <h5 class="fw-bold text-white mb-2">2. Rabin-Karp Algorithm</h5>
+                    <p class="small text-secondary mb-3">
+                        Computes a numerical fingerprint using rolling hash. Character verification occurs only when hashes match, eliminating non-matching windows in O(1) rolling time.
+                    </p>
+                    <ul class="list-unstyled small text-muted mb-0">
+                        <li><i class="bi bi-clock me-1 text-primary"></i> Average Time: <strong>O(N + M)</strong></li>
+                        <li><i class="bi bi-exclamation-circle me-1 text-danger"></i> Worst Time: <strong>O(N × M)</strong></li>
+                        <li><i class="bi bi-hdd me-1 text-info"></i> Space: <strong>O(1)</strong></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- KMP -->
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100 algo-card active-algo-card">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="algo-pill text-primary border-primary">Deterministic</span>
+                        <span class="text-muted small">O(N + M) Best</span>
+                    </div>
+                    <h5 class="fw-bold text-white mb-2">3. Knuth-Morris-Pratt (KMP)</h5>
+                    <p class="small text-secondary mb-3">
+                        Precomputes an LPS (Longest Proper Prefix which is also Suffix) array. Avoids backtracking in the text completely when a mismatch occurs.
+                    </p>
+                    <ul class="list-unstyled small text-muted mb-0">
+                        <li><i class="bi bi-clock me-1 text-primary"></i> Best/Avg Time: <strong>O(N)</strong></li>
+                        <li><i class="bi bi-check-circle me-1 text-success"></i> Worst Time: <strong>O(N + M)</strong></li>
+                        <li><i class="bi bi-hdd me-1 text-info"></i> Space: <strong>O(M)</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section id="how-it-works" class="py-5 border-top border-dark-subtle">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-white mb-2">How <span class="text-gradient">PlagScan</span> Works</h2>
+            <p class="text-muted">A fair, step-by-step pipeline ensuring transparent algorithmic comparisons.</p>
+        </div>
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="step-card p-3">
+                    <div class="step-number">1</div>
+                    <h6 class="text-white mt-3 fw-bold">Text Normalization</h6>
+                    <p class="small text-muted mb-0">Both files are lowercased and stripped of irregular whitespace and punctuation differences.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="step-card p-3">
+                    <div class="step-number">2</div>
+                    <h6 class="text-white mt-3 fw-bold">Word Shingling</h6>
+                    <p class="small text-muted mb-0">Compared text is segmented into overlapping k-word shingles (default 5-word phrases).</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="step-card p-3">
+                    <div class="step-number">3</div>
+                    <h6 class="text-white mt-3 fw-bold">Algorithm Search</h6>
+                    <p class="small text-muted mb-0">Naive, Rabin-Karp, or KMP searches each shingle against reference text; execution time is measured.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="step-card p-3">
+                    <div class="step-number">4</div>
+                    <h6 class="text-white mt-3 fw-bold">Deduplicated Similarity</h6>
+                    <p class="small text-muted mb-0">Unique matched tokens are tracked to calculate containment percentage without double counting.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
